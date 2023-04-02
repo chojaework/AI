@@ -29,25 +29,25 @@ class SearchProblem:
 
     def getStartState(self):
         """
-        Returns the start current for the search problem.
+        Returns the start CurrentItem for the search problem.
         """
         util.raiseNotDefined()
 
-    def isGoalState(self, current):
+    def isGoalState(self, CurrentItem):
         """
-          current: Search current
+          CurrentItem: Search CurrentItem
 
-        Returns True if and only if the current is a valid goal current.
+        Returns True if and only if the CurrentItem is a valid goal CurrentItem.
         """
         util.raiseNotDefined()
 
-    def getSuccessors(self, current):
+    def getSuccessors(self, CurrentItem):
         """
-          current: Search current
+          CurrentItem: Search CurrentItem
 
-        For a given current, this should return a list of triples, (successor,
-        action, stepCost), where 'successor' is a successor to the current
-        current, 'action' is the action required to get there, and 'stepCost' is
+        For a given CurrentItem, this should return a list of triples, (successor,
+        action, stepCost), where 'successor' is a successor to the CurrentItem
+        CurrentItem, 'action' is the action required to get there, and 'stepCost' is
         the incremental cost of expanding to that successor.
         """
         util.raiseNotDefined()
@@ -91,33 +91,33 @@ def depthFirstSearch(problem):
     """
     # getCostofActions:  <bound method PositionSearchProblem.getCostOfActions of <searchAgents.PositionSearchProblem object at 0x1016f1308>>
     "*** YOUR CODE HERE ***"
-    stk = util.Stack() #((5, 4), 'South', 1))
-    path = [] #['South', ]
-    visited = [] #[(5, 5), ]
-    current_path = dict() #{((5, 4), 'South', 1): ((5, 5), None, None), }
+    # dfs uses a stack to implement
+    stk = util.Stack()
+    # list used to check if the node has been visited
+    visited = []
+    StartState = problem.getStartState()
+    # StartItem: [(5, 5), [Cumulated Path from StartState]]
+    StartItem = [StartState, []]
+    stk.push(StartItem)
 
-    start = (problem.getStartState(), None, None)
-    stk.push(start)
+    # repeat until stack is empty
+    while stk.isEmpty != 1:
+        CurrentItem = stk.pop()
+        CurrentState = CurrentItem[0]
+        CurrentPath = CurrentItem[1]
 
-    while stk.isEmpty != 0:
-        current = stk.pop()
-        if(current[0] in visited): continue
-        visited.append(current[0])
+        if CurrentState in visited: continue
+        visited.append(CurrentState)
 
-        # goal state를 찾은 경우
-        if problem.isGoalState(current[0]):
-            while current[0] != start[0]:
-                path.append(current[1])
-                current = current_path[current]
-
-            path.reverse()
-            return path
+        # GoalState found
+        if problem.isGoalState(CurrentState):
+            return CurrentPath
         
-        # goal state를 찾지 못한 경우
-        for succ in problem.getSuccessors(current[0]):
-            if succ[0] not in visited:
-                stk.push(succ)
-                current_path[succ] = current
+        # GoalState not found -> Push successors to the stack
+        for succ in problem.getSuccessors(CurrentState):
+            succState = succ[0]
+            succPath = succ[1]
+            stk.push([succState, CurrentPath + [succPath]])
 
     return None
     # util.raiseNotDefined()
@@ -125,34 +125,33 @@ def depthFirstSearch(problem):
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
+    # bfs uses a stack to implement
     q = util.Queue()
+    # list used to check if the node has been visited
     visited = []
-    current_path = dict()
-    path = []
+    StartState = problem.getStartState()
+    # StartItem: [(5, 5), [Cumulated Path from StartState]]
+    StartItem = [StartState, []]
+    q.push(StartItem)
 
-    start = (problem.getStartState(), None, None)
-    q.push(start)
-    
-    while q.isEmpty != 0:
-        current = q.pop()
-        if(current[0] in visited): continue
+    # repeat until queue is empty
+    while q.isEmpty != 1:
+        CurrentItem = q.pop()
+        CurrentState = CurrentItem[0]
+        CurrentPath = CurrentItem[1]
 
-        visited.append(current[0])
+        if CurrentState in visited: continue
+        visited.append(CurrentState)
 
-        if problem.isGoalState(current[0]):
-            while current[0] != start[0]:
-                path.append(current[1])
-                current = current_path[current]
-
-            path.reverse()
-            return path
+        # GoalState found
+        if problem.isGoalState(CurrentState):
+            return CurrentPath
         
-        for succ in problem.getSuccessors(current[0]):
-            if succ[0] not in visited:
-                q.push(succ)
-                current_path[succ] = current
-
-    return None
+        # GoalState not found -> Push successors to the stack
+        for succ in problem.getSuccessors(CurrentState):
+            succState = succ[0]
+            succPath = succ[1]
+            q.push([succState, CurrentPath + [succPath]])
     # util.raiseNotDefined()
 
 def uniformCostSearch(problem):
@@ -161,27 +160,42 @@ def uniformCostSearch(problem):
     # print(problem.getCostOfActions(['South', 'West']))
     pq = util.PriorityQueue() # [(priority, self.count, ((5,5), None, None)), ]
     visited = []
+    StartState = problem.getStartState()
+    StartItem = (StartState, []) 
+    # [((5, 5), [Cumulated Path from StartState])]
+    pq.push(StartItem, 0)
+    # 0: Cost
 
-    start = (problem.getStartState(), []) # [((5, 5), [])]
-    pq.push(start, 0)
+    # repeat until priority queue is empty
+    while pq.isEmpty != 1:
+        CurrentItem = pq.pop()
+        CurrentState =CurrentItem[0]
+        CurrentPath = CurrentItem[1]
 
-    while pq.isEmpty != 0:
-        current = pq.pop()
-        if(current[0] in visited): continue
-        visited.append(current[0])
+        if(CurrentState in visited): continue 
+        visited.append(CurrentState)
 
-        if problem.isGoalState(current[0]):
-            return current[1]
+        # GoalState found
+        if problem.isGoalState(CurrentState):
+            return CurrentPath
         
-        for succ in problem.getSuccessors(current[0]):
-            pq.push((succ[0], current[1] + [succ[1]]), problem.getCostOfActions(current[1]) + succ[2])
+        # GoalState not found
+        for succ in problem.getSuccessors(CurrentState):
+            succState = succ[0]
+            succPath = succ[1]
+            succCost = succ[2]
+            
+            pq.update((succState, 
+                       CurrentPath + [succPath]
+                       ), 
+                       problem.getCostOfActions(CurrentPath) + succCost)
 
     return None
     # util.raiseNotDefined()
 
-def nullHeuristic(current, problem=None):
+def nullHeuristic(CurrentItem, problem=None):
     """
-    A heuristic function estimates the cost from the current current to the nearest
+    A heuristic function estimates the cost from the CurrentItem CurrentItem to the nearest
     goal in the provided SearchProblem.  This heuristic is trivial.
     """
     return 0
@@ -189,14 +203,36 @@ def nullHeuristic(current, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    print(heuristic)
-    # pq = util.PriorityQueue()
-    # visited = []
+    pq = util.PriorityQueue() # [(priority, self.count, ((5,5), None, None)), ]
+    visited = []
+    StartState = problem.getStartState()
+    StartItem = (StartState, []) # [((5, 5), [])]
+    pq.push(StartItem, heuristic(StartState, problem))
+    
+    # repeat until priority queue is empty
+    while pq.isEmpty != 1:
+        CurrentItem = pq.pop()
+        CurrentState =CurrentItem[0]
+        CurrentPath = CurrentItem[1]
 
-    # start = (problem.getStartState(), [])
-    # pq.push(start, heuristic(start, problem))
+        if(CurrentState in visited): continue
+        visited.append(CurrentState)
 
+        # GoalState found
+        if problem.isGoalState(CurrentState):
+            return CurrentPath
+        
+        # GoalState not found
+        for succ in problem.getSuccessors(CurrentState):
+            succState = succ[0]
+            succPath = succ[1]
+            succCost = succ[2]
 
+            pq.update((succState, 
+                       CurrentPath + [succPath]), 
+                       problem.getCostOfActions(CurrentPath) + succCost + heuristic(succState, problem))
+
+    return None
     # util.raiseNotDefined()
 
 
